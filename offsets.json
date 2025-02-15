@@ -14,15 +14,31 @@
             "id": "preset3",
             "name": "拡張 (15分)",
             "offset": 900,
-            "switchTime": "12:00:00",
-            "newOffset": 1800
+            "timeOffsets": [
+                {
+                    "switchTime": "12:00:00",
+                    "newOffset": 1800
+                },
+                {
+                    "switchTime": "18:00:00",
+                    "newOffset": 2400
+                }
+            ]
         },
         {
             "id": "preset4",
             "name": "長時間 (30分)",
             "offset": 1800,
-            "switchTime": "18:30:00",
-            "newOffset": 3600
+            "timeOffsets": [
+                {
+                    "switchTime": "18:30:00",
+                    "newOffset": 3600
+                },
+                {
+                    "switchTime": "23:59:59",
+                    "newOffset": 4800
+                }
+            ]
         }
     ]
 }

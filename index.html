@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>外部JSON参照オフセット時刻計算</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        select, input, button { margin: 10px; padding: 5px; }
-        h3 { margin-top: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        select,
+        input,
+        button {
+            margin: 10px;
+            padding: 5px;
+        }
+
+        h3 {
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
 
     <h2>外部JSON参照オフセット時刻計算</h2>
 
     <label for="offsetSelect">プリセットオフセット:</label>
-    <select id="offsetSelect"></select>  <!-- JSONから動的に選択肢を追加 -->
+    <select id="offsetSelect"></select> <!-- JSONから動的に選択肢を追加 -->
 
     <br>
 
@@ -36,7 +51,7 @@
 
     <script>
         const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/offsets.json";
-        let offsets = {};  
+        let offsets = {};
 
         async function fetchOffsets() {
             try {
@@ -64,7 +79,7 @@
             let presetId = document.getElementById("offsetSelect").value;
             let preset = offsets.presets.find(p => p.id === presetId);
             if (!preset) return;
-    
+
             let playTimeStr = document.getElementById("playTime").value;
 
             if (!playTimeStr) {
@@ -74,23 +89,25 @@
 
             let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
             let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
-            
+
             // 追加オフセットを取得
             let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
-    
+
             // 基本オフセットを適用
             let offsetToApply = preset.offset;
-    
-            // 特定の時刻を超えた場合、新しいオフセットを適用
-            if (preset.switchTime && preset.newOffset) {
-                let [switchHours, switchMinutes, switchSeconds] = preset.switchTime.split(":").map(Number);
-                let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
-    
-                if (playTimeInSeconds >= switchTimeInSeconds) {
-                    offsetToApply = preset.newOffset;
+
+            // 複数の時刻を超えた場合に新しいオフセットを適用
+            if (preset.timeOffsets && preset.timeOffsets.length > 0) {
+                for (let timeOffset of preset.timeOffsets) {
+                    let [switchHours, switchMinutes, switchSeconds] = timeOffset.switchTime.split(":").map(Number);
+                    let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
+
+                    if (playTimeInSeconds >= switchTimeInSeconds) {
+                        offsetToApply = timeOffset.newOffset;
+                    }
                 }
             }
-    
+
             let totalOffset = offsetToApply + extraOffset;
             let adjustedTimeInSeconds = playTimeInSeconds - totalOffset;
 
@@ -103,7 +120,7 @@
             let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
             let adjustedSeconds = adjustedTimeInSeconds % 60;
 
-            document.getElementById("result").textContent = 
+            document.getElementById("result").textContent =
                 `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
         }
 
@@ -112,7 +129,9 @@
         document.getElementById("playTime").addEventListener("input", calculateTime);
 
         fetchOffsets();
+
     </script>
 
 </body>
+
 </html>
