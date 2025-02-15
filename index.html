@@ -29,8 +29,8 @@
 
     <h2>同時視聴-アーカイブ再生時刻変換ツール</h2>
 
-    <label for="offsetSelect">演目:</label>
-    <select id="offsetSelect"></select> <!-- JSONから動的に選択肢を追加 -->
+    <label for="archiveSelect">演目:</label>
+    <select id="archiveSelect"></select> <!-- JSONから動的に選択肢を追加 -->
 
     <br>
 
@@ -48,12 +48,17 @@
     <input type="time" id="groupWatchTime" step="1" value="00:00:00">
 
     <br>
+
+    <button id="archiveButton" onclick="window.location.href='#'">アーカイブへ移動</button>
+    <button id="groupWatchButton" onclick="window.location.href='#'">同時視聴へ移動</button>
+
+    <br>
     <button onclick="window.location.href='https://example.com'">問い合わせ等はこちら</button>
 
     <script>
-        const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/offsets.json";
+        const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/archives.json";
         let offsets = {};
-        let currentOffset = 0;
+        let currentArchive;
 
         async function fetchOffsets() {
             try {
@@ -63,11 +68,13 @@
 
                 offsets.presets.unshift({
                     "name": "▼以下から選択",
-                    "offset": 0
+                    "offset": 0,
+                    "archiveURL": "https://bakutan.natorisana.com/",
+                    "groupWatchURL": "https://www.youtube.com/@sana_natori"
                 });
 
                 // JSONデータを元に選択肢を動的に作成
-                let selectElement = document.getElementById("offsetSelect");
+                let selectElement = document.getElementById("archiveSelect");
                 selectElement.innerHTML = "";  // 既存の選択肢をクリア
                 offsets.presets.forEach(preset => {
                     let option = document.createElement("option");
@@ -76,14 +83,14 @@
                     selectElement.appendChild(option);
                 });
 
-                calculateGWT();
+                onArchiveChanged();
             } catch (error) {
                 console.error("JSON読み込みエラー:", error);
             }
         }
 
         function calculateGWT() {
-            let presetName = document.getElementById("offsetSelect").value;
+            let presetName = document.getElementById("archiveSelect").value;
             let preset = offsets.presets.find(p => p.name === presetName);
             if (!preset) return;
 
@@ -134,7 +141,7 @@
         }
 
         function calculateAT() {
-            let presetName = document.getElementById("offsetSelect").value;
+            let presetName = document.getElementById("archiveSelect").value;
             let preset = offsets.presets.find(p => p.name === presetName);
             if (!preset) return;
 
@@ -179,7 +186,29 @@
             document.getElementById("archiveTime").value = archiveTime;
         }
 
-        document.getElementById("offsetSelect").addEventListener("change", calculateGWT);
+        function onArchiveChanged() {
+            let presetId = document.getElementById("archiveSelect").value;
+            currentArchive = offsets.presets.find(p => p.id === presetId);
+            if (!currentArchive) return;
+
+            // 現在選択されているプリセットのURLを取得
+            let archiveURL = currentArchive.archiveURL;
+            let groupWatchURL = currentArchive.groupWatchURL;
+
+            // URL遷移ボタンの処理を更新
+            let archiveButton = document.getElementById("archiveButton");
+            archiveButton.onclick = function () {
+                window.location.href = archiveURL;  // 選択されたプリセットのURLに遷移
+            };
+            let groupWatchButton = document.getElementById("groupWatchButton");
+            groupWatchButton.onclick = function () {
+                window.location.href = groupWatchURL;  // 選択されたプリセットのURLに遷移
+            };
+
+            calculateGWT();
+        }
+
+        document.getElementById("archiveSelect").addEventListener("change", onArchiveChanged);
         document.getElementById("extraOffset").addEventListener("input", calculateGWT);
         document.getElementById("archiveTime").addEventListener("input", calculateGWT);
         document.getElementById("groupWatchTime").addEventListener("input", calculateAT);
