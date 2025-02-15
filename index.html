@@ -49,8 +49,8 @@
 
     <br>
 
-    <button id="archiveButton" onclick="window.location.href='#'">アーカイブへ移動</button>
-    <button id="groupWatchButton" onclick="window.location.href='#'">同時視聴へ移動</button>
+    <button id="archiveButton">アーカイブへ移動</button>
+    <button id="groupWatchButton">同時視聴へ移動</button>
 
     <br>
     <button onclick="window.location.href='https://example.com'">問い合わせ等はこちら</button>
@@ -198,11 +198,11 @@
             // URL遷移ボタンの処理を更新
             let archiveButton = document.getElementById("archiveButton");
             archiveButton.onclick = function () {
-                window.location.href = archiveURL;  // 選択されたプリセットのURLに遷移
+                window.open(archiveURL, '_blank');  // 選択されたプリセットのURLに遷移
             };
             let groupWatchButton = document.getElementById("groupWatchButton");
             groupWatchButton.onclick = function () {
-                window.location.href = groupWatchURL;  // 選択されたプリセットのURLに遷移
+                window.open(groupWatchURL, '_blank');  // 選択されたプリセットのURLに遷移
             };
 
             calculateGWT();
