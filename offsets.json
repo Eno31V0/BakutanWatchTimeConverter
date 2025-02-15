@@ -1,6 +1,8 @@
 {
-    "preset1": 0,
-    "preset2": 300,
-    "preset3": 900,
-    "preset4": 1800
+    "presets": [
+        { "id": "preset1", "name": "標準 (0秒)", "offset": 0 },
+        { "id": "preset2", "name": "短縮 (5分)", "offset": 300 },
+        { "id": "preset3", "name": "拡張 (15分)", "offset": 900 },
+        { "id": "preset4", "name": "長時間 (30分)", "offset": 1800 }
+    ]
 }
