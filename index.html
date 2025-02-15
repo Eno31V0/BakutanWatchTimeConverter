@@ -27,9 +27,9 @@
 
 <body>
 
-    <h2>外部JSON参照オフセット時刻計算</h2>
+    <h2>同時視聴-アーカイブ再生時刻変換ツール</h2>
 
-    <label for="offsetSelect">プリセットオフセット:</label>
+    <label for="offsetSelect">演目:</label>
     <select id="offsetSelect"></select> <!-- JSONから動的に選択肢を追加 -->
 
     <br>
@@ -39,18 +39,18 @@
 
     <br>
 
-    <label for="playTime">再生時刻 (hh:mm:ss):</label>
+    <label for="playTime">アーカイブの再生時刻 (hh:mm:ss):</label>
     <input type="time" id="playTime" step="1" value="00:00:00">
 
-    <label for="adjustedTime">調整後の時刻 (hh:mm:ss):</label>
-    <input type="time" id="adjustedTime" step="1" value="00:00:00" readonly>
+    <br>
+
+    <label for="adjustedTime">同時視聴の再生時刻 (hh:mm:ss):</label>
+    <input type="time" id="adjustedTime" step="1" value="00:00:00">
 
     <h3>結果: <span id="result">--:--:--</span></h3>
 
-    <!-- ボタンとラベル -->
     <br>
-    <button onclick="window.location.href='https://example.com'">特定URLへ移動</button>
-    <p>問い合わせ等はこちら</p>
+    <button onclick="window.location.href='https://example.com'">問い合わせ等はこちら</button>
 
     <script>
         const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/offsets.json";
@@ -62,12 +62,17 @@
                 if (!response.ok) throw new Error("JSONの取得に失敗");
                 offsets = await response.json();
 
+                offsets.presets.unshift({
+                    "name": "▼以下から選択",
+                    "offset": 0
+                });
+
                 // JSONデータを元に選択肢を動的に作成
                 let selectElement = document.getElementById("offsetSelect");
                 selectElement.innerHTML = "";  // 既存の選択肢をクリア
                 offsets.presets.forEach(preset => {
                     let option = document.createElement("option");
-                    option.value = preset.id;
+                    option.value = preset.name;
                     option.textContent = preset.name;
                     selectElement.appendChild(option);
                 });
@@ -79,8 +84,8 @@
         }
 
         function calculateTime() {
-            let presetId = document.getElementById("offsetSelect").value;
-            let preset = offsets.presets.find(p => p.id === presetId);
+            let presetName = document.getElementById("offsetSelect").value;
+            let preset = offsets.presets.find(p => p.name === presetName);
             if (!preset) return;
 
             let playTimeStr = document.getElementById("playTime").value;
