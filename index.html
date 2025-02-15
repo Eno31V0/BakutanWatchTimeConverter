@@ -51,13 +51,6 @@
             let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
             let adjustedTimeInSeconds = playTimeInSeconds - totalOffset;
             
-            <!--
-            if (adjustedTimeInSeconds < 0) {
-                document.getElementById("result").textContent = "00:00:00";
-                return;
-            }
-            -->
-
             let adjustedHours = Math.floor(adjustedTimeInSeconds / 3600);
             let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
             let adjustedSeconds = adjustedTimeInSeconds % 60;
