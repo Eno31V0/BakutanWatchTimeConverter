@@ -35,19 +35,17 @@
     <br>
 
     <label for="extraOffset">追加オフセット (秒):</label>
-    <input type="number" id="extraOffset" value="0" min="0">
+    <input type="number" id="extraOffset" value="0">
 
     <br>
 
-    <label for="playTime">アーカイブの再生時刻 (hh:mm:ss):</label>
-    <input type="time" id="playTime" step="1" value="00:00:00">
+    <label for="archiveTime">アーカイブの再生時刻 (hh:mm:ss):</label>
+    <input type="time" id="archiveTime" step="1" value="00:00:00">
 
     <br>
 
-    <label for="adjustedTime">同時視聴の再生時刻 (hh:mm:ss):</label>
-    <input type="time" id="adjustedTime" step="1" value="00:00:00">
-
-    <h3>結果: <span id="result">--:--:--</span></h3>
+    <label for="groupWatchTime">同時視聴の再生時刻 (hh:mm:ss):</label>
+    <input type="time" id="groupWatchTime" step="1" value="00:00:00">
 
     <br>
     <button onclick="window.location.href='https://example.com'">問い合わせ等はこちら</button>
@@ -55,6 +53,7 @@
     <script>
         const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/offsets.json";
         let offsets = {};
+        let currentOffset = 0;
 
         async function fetchOffsets() {
             try {
@@ -77,23 +76,23 @@
                     selectElement.appendChild(option);
                 });
 
-                calculateTime();
+                calculateGWT();
             } catch (error) {
                 console.error("JSON読み込みエラー:", error);
             }
         }
 
-        function calculateTime() {
+        function calculateGWT() {
             let presetName = document.getElementById("offsetSelect").value;
             let preset = offsets.presets.find(p => p.name === presetName);
             if (!preset) return;
 
-            let playTimeStr = document.getElementById("playTime").value;
+            let playTimeStr = document.getElementById("archiveTime").value;
 
-            if (!playTimeStr) {
-                document.getElementById("result").textContent = "--:--:--";
-                return;
-            }
+            //if (!playTimeStr) {
+            //    document.getElementById("result").textContent = "--:--:--";
+            //    return;
+            //}
 
             let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
             let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
@@ -104,7 +103,53 @@
             // 基本オフセットを適用
             let offsetToApply = preset.offset;
 
-            // 複数の時刻を超えた場合に新しいオフセットを適用
+            // 特定の時刻を超えた場合に新しいオフセットを適用
+            if (preset.timeOffsets && preset.timeOffsets.length > 0) {
+                for (let timeOffset of preset.timeOffsets) {
+                    let [switchHours, switchMinutes, switchSeconds] = timeOffset.switchTime.split(":").map(Number);
+                    let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
+
+                    if (playTimeInSeconds >= switchTimeInSeconds) {
+                        offsetToApply = timeOffset.newOffset;
+                    }
+                }
+            }
+
+            let totalOffset = offsetToApply + extraOffset;
+            let adjustedTimeInSeconds = playTimeInSeconds + totalOffset;
+
+            if (adjustedTimeInSeconds < 0) {
+                document.getElementById("groupWatchTime").value = "00:00:00";
+                return;
+            }
+
+            let adjustedHours = Math.floor(adjustedTimeInSeconds / 3600);
+            let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
+            let adjustedSeconds = adjustedTimeInSeconds % 60;
+
+            let groupWatchTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+
+            // 結果をフィールドに反映
+            document.getElementById("groupWatchTime").value = groupWatchTime;
+        }
+
+        function calculateAT() {
+            let presetName = document.getElementById("offsetSelect").value;
+            let preset = offsets.presets.find(p => p.name === presetName);
+            if (!preset) return;
+
+            let playTimeStr = document.getElementById("groupWatchTime").value;
+
+            let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
+            let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+
+            // 追加オフセットを取得
+            let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
+
+            // 基本オフセットを適用
+            let offsetToApply = preset.offset;
+
+            // 特定の時刻を超えた場合に新しいオフセットを適用
             if (preset.timeOffsets && preset.timeOffsets.length > 0) {
                 for (let timeOffset of preset.timeOffsets) {
                     let [switchHours, switchMinutes, switchSeconds] = timeOffset.switchTime.split(":").map(Number);
@@ -120,8 +165,7 @@
             let adjustedTimeInSeconds = playTimeInSeconds - totalOffset;
 
             if (adjustedTimeInSeconds < 0) {
-                document.getElementById("result").textContent = "00:00:00";
-                document.getElementById("adjustedTime").value = "00:00:00"; // 結果をフィールドに設定
+                document.getElementById("archiveTime").value = "00:00:00";
                 return;
             }
 
@@ -129,20 +173,16 @@
             let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
             let adjustedSeconds = adjustedTimeInSeconds % 60;
 
-            let adjustedTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
-
-            // 結果を表示
-            document.getElementById("result").textContent = adjustedTime;
+            let archiveTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
 
             // 結果をフィールドに反映
-            //document.getElementById("adjustedTime").value = adjustedTime.substring(0, 5); // "hh:mm"形式でセット
-            document.getElementById("adjustedTime").value = adjustedTime;
+            document.getElementById("archiveTime").value = archiveTime;
         }
 
-
-        document.getElementById("offsetSelect").addEventListener("change", calculateTime);
-        document.getElementById("extraOffset").addEventListener("input", calculateTime);
-        document.getElementById("playTime").addEventListener("input", calculateTime);
+        document.getElementById("offsetSelect").addEventListener("change", calculateGWT);
+        document.getElementById("extraOffset").addEventListener("input", calculateGWT);
+        document.getElementById("archiveTime").addEventListener("input", calculateGWT);
+        document.getElementById("groupWatchTime").addEventListener("input", calculateAT);
 
         fetchOffsets();
 
