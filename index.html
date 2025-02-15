@@ -6,7 +6,7 @@
     <title>外部JSON参照オフセット時刻計算</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        select, input { margin: 10px; padding: 5px; }
+        select, input, button { margin: 10px; padding: 5px; }
         h3 { margin-top: 20px; }
     </style>
 </head>
@@ -15,12 +15,7 @@
     <h2>外部JSON参照オフセット時刻計算</h2>
 
     <label for="offsetSelect">プリセットオフセット:</label>
-    <select id="offsetSelect">
-        <option value="preset1">プリセット 1</option>
-        <option value="preset2">プリセット 2</option>
-        <option value="preset3">プリセット 3</option>
-        <option value="preset4">プリセット 4</option>
-    </select>
+    <select id="offsetSelect"></select>  <!-- JSONから動的に選択肢を追加 -->
 
     <br>
 
@@ -34,25 +29,40 @@
 
     <h3>結果: <span id="result">--:--:--</span></h3>
 
+    <!-- ボタンとラベル -->
+    <br>
+    <button onclick="window.location.href='https://example.com'">特定URLへ移動</button>
+    <p>問い合わせ等はこちら</p>
+
     <script>
         const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/offsets.json";
-        let offsets = {};  // JSONデータを保存する変数
+        let offsets = {};  
 
-        // JSONデータを取得
         async function fetchOffsets() {
             try {
                 const response = await fetch(jsonUrl);
                 if (!response.ok) throw new Error("JSONの取得に失敗");
                 offsets = await response.json();
-                calculateTime();  // データ取得後に計算を実行
+
+                // JSONデータを元に選択肢を動的に作成
+                let selectElement = document.getElementById("offsetSelect");
+                selectElement.innerHTML = "";  // 既存の選択肢をクリア
+                offsets.presets.forEach(preset => {
+                    let option = document.createElement("option");
+                    option.value = preset.id;
+                    option.textContent = preset.name;
+                    selectElement.appendChild(option);
+                });
+
+                calculateTime();  
             } catch (error) {
                 console.error("JSON読み込みエラー:", error);
             }
         }
 
         function calculateTime() {
-            let presetKey = document.getElementById("offsetSelect").value;
-            let presetOffset = offsets[presetKey] || 0;  // JSONデータの値を取得
+            let presetId = document.getElementById("offsetSelect").value;
+            let presetOffset = offsets.presets.find(p => p.id === presetId)?.offset || 0;
             let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
             let totalOffset = presetOffset + extraOffset;
 
@@ -80,12 +90,10 @@
                 `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
         }
 
-        // イベントリスナーの登録
         document.getElementById("offsetSelect").addEventListener("change", calculateTime);
         document.getElementById("extraOffset").addEventListener("input", calculateTime);
         document.getElementById("playTime").addEventListener("input", calculateTime);
 
-        // JSONデータの取得を開始
         fetchOffsets();
     </script>
 
