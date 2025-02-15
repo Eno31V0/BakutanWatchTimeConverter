@@ -187,8 +187,8 @@
         }
 
         function onArchiveChanged() {
-            let presetId = document.getElementById("archiveSelect").value;
-            currentArchive = offsets.presets.find(p => p.id === presetId);
+            let presetName = document.getElementById("archiveSelect").value;
+            currentArchive = offsets.presets.find(p => p.name === presetName);
             if (!currentArchive) return;
 
             // 現在選択されているプリセットのURLを取得
