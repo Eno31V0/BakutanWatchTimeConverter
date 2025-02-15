@@ -54,7 +54,7 @@
                     selectElement.appendChild(option);
                 });
 
-                calculateTime();  
+                calculateTime();
             } catch (error) {
                 console.error("JSON読み込みエラー:", error);
             }
@@ -62,10 +62,9 @@
 
         function calculateTime() {
             let presetId = document.getElementById("offsetSelect").value;
-            let presetOffset = offsets.presets.find(p => p.id === presetId)?.offset || 0;
-            let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
-            let totalOffset = presetOffset + extraOffset;
-
+            let preset = offsets.presets.find(p => p.id === presetId);
+            if (!preset) return;
+    
             let playTimeStr = document.getElementById("playTime").value;
 
             if (!playTimeStr) {
@@ -75,6 +74,24 @@
 
             let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
             let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+            
+            // 追加オフセットを取得
+            let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
+    
+            // 基本オフセットを適用
+            let offsetToApply = preset.offset;
+    
+            // 特定の時刻を超えた場合、新しいオフセットを適用
+            if (preset.switchTime && preset.newOffset) {
+                let [switchHours, switchMinutes, switchSeconds] = preset.switchTime.split(":").map(Number);
+                let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
+    
+                if (playTimeInSeconds >= switchTimeInSeconds) {
+                    offsetToApply = preset.newOffset;
+                }
+            }
+    
+            let totalOffset = offsetToApply + extraOffset;
             let adjustedTimeInSeconds = playTimeInSeconds - totalOffset;
 
             if (adjustedTimeInSeconds < 0) {

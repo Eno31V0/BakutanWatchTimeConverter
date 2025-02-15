@@ -1,8 +1,28 @@
 {
     "presets": [
-        { "id": "preset1", "name": "標準 (0秒)", "offset": 0 },
-        { "id": "preset2", "name": "短縮 (5分)", "offset": 300 },
-        { "id": "preset3", "name": "拡張 (15分)", "offset": 900 },
-        { "id": "preset4", "name": "長時間 (30分)", "offset": 1800 }
+        {
+            "id": "preset1",
+            "name": "標準 (0秒)",
+            "offset": 0
+        },
+        {
+            "id": "preset2",
+            "name": "短縮 (5分)",
+            "offset": 300
+        },
+        {
+            "id": "preset3",
+            "name": "拡張 (15分)",
+            "offset": 900,
+            "switchTime": "12:00:00",
+            "newOffset": 1800
+        },
+        {
+            "id": "preset4",
+            "name": "長時間 (30分)",
+            "offset": 1800,
+            "switchTime": "18:30:00",
+            "newOffset": 3600
+        }
     ]
 }
