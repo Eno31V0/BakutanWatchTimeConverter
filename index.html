@@ -42,6 +42,9 @@
     <label for="playTime">再生時刻 (hh:mm:ss):</label>
     <input type="time" id="playTime" step="1" value="00:00:00">
 
+    <label for="adjustedTime">調整後の時刻 (hh:mm:ss):</label>
+    <input type="time" id="adjustedTime" step="1" value="00:00:00" readonly>
+
     <h3>結果: <span id="result">--:--:--</span></h3>
 
     <!-- ボタンとラベル -->
@@ -113,6 +116,7 @@
 
             if (adjustedTimeInSeconds < 0) {
                 document.getElementById("result").textContent = "00:00:00";
+                document.getElementById("adjustedTime").value = "00:00:00"; // 結果をフィールドに設定
                 return;
             }
 
@@ -120,9 +124,16 @@
             let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
             let adjustedSeconds = adjustedTimeInSeconds % 60;
 
-            document.getElementById("result").textContent =
-                `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+            let adjustedTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+
+            // 結果を表示
+            document.getElementById("result").textContent = adjustedTime;
+
+            // 結果をフィールドに反映
+            //document.getElementById("adjustedTime").value = adjustedTime.substring(0, 5); // "hh:mm"形式でセット
+            document.getElementById("adjustedTime").value = adjustedTime;
         }
+
 
         document.getElementById("offsetSelect").addEventListener("change", calculateTime);
         document.getElementById("extraOffset").addEventListener("input", calculateTime);
