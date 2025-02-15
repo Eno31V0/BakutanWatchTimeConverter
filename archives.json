@@ -27,6 +27,12 @@
         {
             "name": "さなのばくたん。 -王国からの招待状- Powered by mouse",
             "offset": 288,
+            "timeOffsets": [
+                {
+                    "switchTime": "00:20:12",
+                    "newOffset": 315
+                }
+            ],
             "archiveURL": "https://vimeo.com/ondemand/sananobakutan2024",
             "groupWatchURL": "https://www.youtube.com/watch?v=pLmxNza3BLI"
         }
