@@ -1,12 +1,12 @@
 {
-    "presets": [
+    "archives": [
         {
             "name": "さなのばくたん。-ていねいなお誕生日会- Powered by mouse",
-            "offset": 887,
+            "offset": "00:14:47",
             "timeOffsets": [
                 {
                     "switchTime": "00:11:24",
-                    "newOffset": 1125
+                    "newOffset": "00:18:45"
                 }
             ],
             "archiveURL": "https://vimeo.com/ondemand/sananobakutan2021",
@@ -14,11 +14,11 @@
         },
         {
             "name": "さなのばくたん。 -ハロー・マイ・バースデイ- Powered by mouse",
-            "offset": 580,
+            "offset": "00:09:40",
             "timeOffsets": [
                 {
                     "switchTime": "01:07:00",
-                    "newOffset": 805
+                    "newOffset": "00:13:25"
                 }
             ],
             "archiveURL": "https://vimeo.com/ondemand/sananobakutan2023",
@@ -26,11 +26,11 @@
         },
         {
             "name": "さなのばくたん。 -王国からの招待状- Powered by mouse",
-            "offset": 288,
+            "offset": "00:04:48",
             "timeOffsets": [
                 {
                     "switchTime": "00:20:12",
-                    "newOffset": 315
+                    "newOffset": "00:05:15"
                 }
             ],
             "archiveURL": "https://vimeo.com/ondemand/sananobakutan2024",

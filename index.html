@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>同時視聴-アーカイブ再生時刻変換ツール</title>
+    <meta name="description" content="ばくたん。ARCHIVES及び同時視聴の再生時刻を相互変換するためのツール">
+    <meta name="generator" content="ChatGPT">
+    <title>ばくたん。ARCHIVES-同時視聴 再生時刻変換ツール</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,11 +25,13 @@
             margin-top: 20px;
         }
     </style>
+    <link rel="me" href="https://github.com/Eno31V0/BakutanWatchTimeConverter/issues" type="">
+    <link rel="me" href="https://x.com/ItMayBeEno" type="">
 </head>
 
 <body>
 
-    <h2>同時視聴-アーカイブ再生時刻変換ツール</h2>
+    <h1>ばくたん。ARCHIVES-同時視聴 再生時刻変換ツール</h1>
 
     <label for="archiveSelect">演目:</label>
     <select id="archiveSelect"></select> <!-- JSONから動的に選択肢を追加 -->
@@ -49,25 +53,55 @@
 
     <br>
 
-    <button id="archiveButton">アーカイブへ移動</button>
-    <button id="groupWatchButton">同時視聴へ移動</button>
+    <details>
+        <summary>オフセット情報(工事中)</summary>
+
+        <p>アーカイブ0秒時点での同時視聴再生時刻: <span id="offsetDisplay">00:00:00</span></p>
+        <ul id="cutPartList" style="display: none;"></ul> <!-- カットされたパート一覧を表示するリスト -->
+
+    </details>
+
+    <button onclick="window.open(currentArchive.archiveURL, '_blank')">アーカイブへ移動</button>
+    <button onclick="window.open(currentArchive.groupWatchURL, '_blank')">同時視聴へ移動</button>
 
     <br>
     <button onclick="window.open('https://forms.gle/Y8yAge8Rwt7qeANb6', '_blank')">問い合わせ等はこちら</button>
-    <p>その他連絡先 <a href="https://github.com/Eno31V0/BakutanWatchTimeConverter/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> <a href="https://x.com/ItMayBeEno" target="_blank" rel="noopener noreferrer">𝕏</a></p>
+
+    <p>
+        その他連絡先
+        <a href="https://github.com/Eno31V0/BakutanWatchTimeConverter/issues" target="_blank"
+            rel="noopener noreferrer">GitHub Issues</a>
+        <a href="https://x.com/ItMayBeEno" target="_blank" rel="noopener noreferrer">𝕏</a>
+    </p>
 
     <script>
-        const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/WebPageLearn/main/archives.json";
-        let offsets = {};
+        const jsonUrl = "https://raw.githubusercontent.com/Eno31v0/BakutanWatchTimeConverter/main/archives.json";
+        let archives = {};
         let currentArchive;
+
+        function decodeTimeString(timeStr) {
+            let [hours, minutes, seconds] = timeStr.split(":").map(Number);
+            let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+            return playTimeInSeconds;
+        }
+
+        function encodeTimeString(second) {
+            let adjustedHours = Math.floor(second / 3600);
+            let adjustedMinutes = Math.floor((second % 3600) / 60);
+            let adjustedSeconds = second % 60;
+
+            let groupWatchTimeStr = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+
+            return groupWatchTimeStr;
+        }
 
         async function fetchOffsets() {
             try {
                 const response = await fetch(jsonUrl);
                 if (!response.ok) throw new Error("JSONの取得に失敗");
-                offsets = await response.json();
+                archives = (await response.json()).archives;
 
-                offsets.presets.unshift({
+                archives.unshift({
                     "name": "▼以下から選択",
                     "offset": 0,
                     "archiveURL": "https://bakutan.natorisana.com/",
@@ -77,24 +111,23 @@
                 // JSONデータを元に選択肢を動的に作成
                 let selectElement = document.getElementById("archiveSelect");
                 selectElement.innerHTML = "";  // 既存の選択肢をクリア
-                offsets.presets.forEach(preset => {
+                archives.forEach(preset => {
                     let option = document.createElement("option");
                     option.value = preset.name;
                     option.textContent = preset.name;
                     selectElement.appendChild(option);
                 });
 
-                onArchiveChanged();
+                //onArchiveSelectChanged();
+                //selectElement.value = "▼以下から選択";
+                currentArchive = archives[0];
             } catch (error) {
                 console.error("JSON読み込みエラー:", error);
             }
         }
 
-        function calculateGWT() {
-            let presetName = document.getElementById("archiveSelect").value;
-            let preset = offsets.presets.find(p => p.name === presetName);
-            if (!preset) return;
-
+        function calculateGWT(event) {
+            if (!currentArchive) return;
             let playTimeStr = document.getElementById("archiveTime").value;
 
             //if (!playTimeStr) {
@@ -102,23 +135,23 @@
             //    return;
             //}
 
-            let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
-            let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+            let playTimeInSeconds = decodeTimeString(playTimeStr);
 
             // 追加オフセットを取得
             let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
 
             // 基本オフセットを適用
-            let offsetToApply = preset.offset;
+            //let offsetToApply = currentArchive.offset;
+            let offsetToApply = decodeTimeString(currentArchive.offset);
 
             // 特定の時刻を超えた場合に新しいオフセットを適用
-            if (preset.timeOffsets && preset.timeOffsets.length > 0) {
-                for (let timeOffset of preset.timeOffsets) {
-                    let [switchHours, switchMinutes, switchSeconds] = timeOffset.switchTime.split(":").map(Number);
-                    let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
+            if (currentArchive.timeOffsets && currentArchive.timeOffsets.length > 0) {
+                for (let timeOffset of currentArchive.timeOffsets) {
+                    let switchTimeInSeconds = decodeTimeString(timeOffset.switchTime);
 
                     if (playTimeInSeconds >= switchTimeInSeconds) {
-                        offsetToApply = timeOffset.newOffset;
+                        //offsetToApply = timeOffset.newOffset;
+                        offsetToApply = decodeTimeString(timeOffset.newOffset);
                     }
                 }
             }
@@ -131,40 +164,33 @@
                 return;
             }
 
-            let adjustedHours = Math.floor(adjustedTimeInSeconds / 3600);
-            let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
-            let adjustedSeconds = adjustedTimeInSeconds % 60;
-
-            let groupWatchTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+            let groupWatchTime = encodeTimeString(adjustedTimeInSeconds);
 
             // 結果をフィールドに反映
             document.getElementById("groupWatchTime").value = groupWatchTime;
         }
 
-        function calculateAT() {
-            let presetName = document.getElementById("archiveSelect").value;
-            let preset = offsets.presets.find(p => p.name === presetName);
-            if (!preset) return;
-
+        function calculateAT(event) {
+            if (!currentArchive) return;
             let playTimeStr = document.getElementById("groupWatchTime").value;
 
-            let [hours, minutes, seconds] = playTimeStr.split(":").map(Number);
-            let playTimeInSeconds = hours * 3600 + minutes * 60 + seconds;
+            let playTimeInSeconds = decodeTimeString(playTimeStr);
 
             // 追加オフセットを取得
             let extraOffset = parseInt(document.getElementById("extraOffset").value) || 0;
 
             // 基本オフセットを適用
-            let offsetToApply = preset.offset;
+            //let offsetToApply = currentArchive.offset;
+            let offsetToApply = decodeTimeString(currentArchive.offset);
 
             // 特定の時刻を超えた場合に新しいオフセットを適用
-            if (preset.timeOffsets && preset.timeOffsets.length > 0) {
-                for (let timeOffset of preset.timeOffsets) {
-                    let [switchHours, switchMinutes, switchSeconds] = timeOffset.switchTime.split(":").map(Number);
-                    let switchTimeInSeconds = switchHours * 3600 + switchMinutes * 60 + switchSeconds;
+            if (currentArchive.timeOffsets && currentArchive.timeOffsets.length > 0) {
+                for (let timeOffset of currentArchive.timeOffsets) {
+                    let switchTimeInSeconds = decodeTimeString(timeOffset.switchTime);
 
                     if (playTimeInSeconds >= switchTimeInSeconds) {
-                        offsetToApply = timeOffset.newOffset;
+                        //offsetToApply = timeOffset.newOffset;
+                        offsetToApply = decodeTimeString(timeOffset.newOffset);
                     }
                 }
             }
@@ -177,39 +203,30 @@
                 return;
             }
 
-            let adjustedHours = Math.floor(adjustedTimeInSeconds / 3600);
-            let adjustedMinutes = Math.floor((adjustedTimeInSeconds % 3600) / 60);
-            let adjustedSeconds = adjustedTimeInSeconds % 60;
-
-            let archiveTime = `${String(adjustedHours).padStart(2, '0')}:${String(adjustedMinutes).padStart(2, '0')}:${String(adjustedSeconds).padStart(2, '0')}`;
+            let groupWatchTime = encodeTimeString(adjustedTimeInSeconds);
 
             // 結果をフィールドに反映
             document.getElementById("archiveTime").value = archiveTime;
         }
 
-        function onArchiveChanged() {
-            let presetName = document.getElementById("archiveSelect").value;
-            currentArchive = offsets.presets.find(p => p.name === presetName);
+        function onArchiveSelectChanged(event) {
+            let archiveName = document.getElementById("archiveSelect").value;
+            currentArchive = archives.find(p => p.name === archiveName);
             if (!currentArchive) return;
 
-            // 現在選択されているプリセットのURLを取得
-            let archiveURL = currentArchive.archiveURL;
-            let groupWatchURL = currentArchive.groupWatchURL;
-
-            // URL遷移ボタンの処理を更新
-            let archiveButton = document.getElementById("archiveButton");
-            archiveButton.onclick = function () {
-                window.open(archiveURL, '_blank');  // 選択されたプリセットのURLに遷移
-            };
-            let groupWatchButton = document.getElementById("groupWatchButton");
-            groupWatchButton.onclick = function () {
-                window.open(groupWatchURL, '_blank');  // 選択されたプリセットのURLに遷移
-            };
+            document.getElementById("offsetDisplay").textContent = currentArchive.offset;
 
             calculateGWT();
         }
 
-        document.getElementById("archiveSelect").addEventListener("change", onArchiveChanged);
+        function isPC() {
+            return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+        if (!isPC()) {
+            alert("本ページはPCでの使用を想定しています。\n現在の使用デバイスでは正常に動作しない可能性が高い事をご了承下さい。\n(特にiOSでは動作不可確認済)");
+        }
+
+        document.getElementById("archiveSelect").addEventListener("change", onArchiveSelectChanged);
         document.getElementById("extraOffset").addEventListener("input", calculateGWT);
         document.getElementById("archiveTime").addEventListener("input", calculateGWT);
         document.getElementById("groupWatchTime").addEventListener("input", calculateAT);
