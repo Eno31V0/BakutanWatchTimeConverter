@@ -220,7 +220,7 @@
         }
 
         function isPC() {
-            return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && navigator.maxTouchPoints === 0;
         }
         if (!isPC()) {
             alert("本ページはPCでの使用を想定しています。\n現在の使用デバイスでは正常に動作しない可能性が高い事をご了承下さい。\n(特にiOSでは動作不可確認済)");
