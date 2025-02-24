@@ -39,7 +39,8 @@
     <br>
 
     <label for="extraOffset">追加オフセット (秒):</label>
-    <input type="number" id="extraOffset" value="0">
+    <!-- <input type="number" id="extraOffset" value="0"> -->
+    <input type="text" inputmode="numeric" id="extraOffset" value="0" style="text-align: right;">
 
     <br>
 
@@ -50,6 +51,10 @@
 
     <label for="groupWatchTime">同時視聴の再生時刻 (hh:mm:ss):</label>
     <input type="time" id="groupWatchTime" step="1" value="00:00:00">
+
+    <br>
+
+
 
     <br>
 
@@ -103,7 +108,7 @@
 
                 archives.unshift({
                     "name": "▼以下から選択",
-                    "offset": 0,
+                    "offset": "00:00:00",
                     "archiveURL": "https://bakutan.natorisana.com/",
                     "groupWatchURL": "https://www.youtube.com/@sana_natori"
                 });
@@ -223,13 +228,29 @@
             return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && navigator.maxTouchPoints === 0;
         }
         if (!isPC()) {
-            alert("本ページはPCでの使用を想定しています。\n現在の使用デバイスでは正常に動作しない可能性が高い事をご了承下さい。\n(特にiOSでは動作不可確認済)");
+            alert("本ページはWindowsでの使用を想定しています。\n現在の使用デバイスでは正常に動作しない可能性が高い事をご了承下さい。\n(特にiOSでは動作不可確認済)");
         }
 
         document.getElementById("archiveSelect").addEventListener("change", onArchiveSelectChanged);
         document.getElementById("extraOffset").addEventListener("input", calculateGWT);
         document.getElementById("archiveTime").addEventListener("input", calculateGWT);
         document.getElementById("groupWatchTime").addEventListener("input", calculateAT);
+
+        document.getElementById("extraOffset").addEventListener("input", function (event) {
+            this.value = this.value.replace(/[^0-9-]/g, ''); // 0-9 と - 以外を削除
+
+            if (this.value.indexOf('-') > 0) {
+                this.value = this.value.replace(/-/g, ''); // - は先頭のみに許可
+            }
+
+            // 先頭の無駄な0を削除（負の数は `-` を残す）
+            this.value = this.value.replace(/^(-?)0+(\d)/, '$1$2');
+
+            // 入力が空になった場合は 0 に設定
+            if (this.value === '' || this.value === '-') {
+                this.value = '0';
+            }
+        });
 
         fetchOffsets();
 
